@@ -1,10 +1,11 @@
 import { User } from "../model/user.model.js";
+import crypto from "crypto";
 
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password, confirmPassword, role } = req.body;
+    const { name, email, password, confirmPassword, role } = req.body;
 
-    if (!username || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({
         message: "All fields are required",
       });
@@ -25,9 +26,10 @@ export const registerUser = async (req, res) => {
     }
 
     const user = await User.create({
-      username,
+      name, // ✅ fixed
       email,
       password,
+      confirmPassword,
       role,
     });
 
@@ -48,6 +50,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// ================= LOGIN =================
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -84,16 +87,15 @@ export const loginUser = async (req, res) => {
       "-password -refreshToken",
     );
 
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // ✅ fixed
+    };
+
     return res
       .status(200)
-      .cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: false,
-      })
-      .cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: false,
-      })
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json({
         success: true,
         message: "Login successful",
@@ -108,26 +110,32 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// ================= LOGOUT =================
 export const logoutUser = async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: null,
-      },
+      $set: { refreshToken: null },
     },
     { new: true },
   );
-  const option = {
+
+  const options = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
   };
-  res
+
+  return res
     .status(200)
-    .clearCookie("accessToken", option)
-    .clearCookie("refreshToken", option)
-    .json(new ApiResponse(200, {}, "user Logout succssfully"));
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json({
+      success: true,
+      message: "User logged out successfully",
+    });
 };
+
+// ================= FORGOT PASSWORD =================
 export const forgetPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -141,16 +149,17 @@ export const forgetPassword = async (req, res) => {
     }
 
     const resetToken = user.generateResetToken();
+
     await user.save({ validateBeforeSave: false });
 
     const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
 
-    console.log("Reset URL:", resetUrl); // 🔥 testing
+    console.log("Reset URL:", resetUrl);
 
     return res.status(200).json({
       success: true,
       message: "Reset link generated",
-      resetUrl, // remove in production
+      resetUrl,
     });
   } catch (error) {
     return res.status(500).json({
@@ -160,10 +169,17 @@ export const forgetPassword = async (req, res) => {
   }
 };
 
+// ================= RESET PASSWORD =================
 export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
 
     if (password !== confirmPassword) {
       return res.status(400).json({
@@ -185,6 +201,7 @@ export const resetPassword = async (req, res) => {
     }
 
     user.password = password;
+    user.confirmPassword = confirmPassword; // ✅ needed for schema validation
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 

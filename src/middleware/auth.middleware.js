@@ -3,7 +3,6 @@ import { User } from "../model/user.model.js";
 
 export const verifyJwt = async (req, res, next) => {
   try {
-    // 1. Token get karo (cookie ya header se)
     const token =
       req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
@@ -13,11 +12,9 @@ export const verifyJwt = async (req, res, next) => {
         message: "Unauthorized request - No token",
       });
     }
-
-    // 2. Token verify karo
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    // 3. User find karo
+ 
     const user = await User.findById(decoded._id).select(
       "-password -refreshToken",
     );
