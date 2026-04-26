@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use(express.static("public"));
 // app.use(cookieParser());
 app.get("/", (req, res) => {
-  res.send("this is my node project ");
+  res.send("this is defult route of backend developement  ");
 });
 // import routess
 app.use("/metamaid/user",AuthRouter)
