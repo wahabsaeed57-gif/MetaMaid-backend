@@ -1,7 +1,7 @@
-
 import express from "express";
 import cors from "cors";
 import  AuthRouter from "./routes/Auth.route.js"
+import doctorRouter from "./routes/doctor.route.js"
 
 const app = express();
 
@@ -20,6 +20,7 @@ app.get("/", (req, res) => {
 });
 // import routess
 app.use("/metamaid/user",AuthRouter)
+app.use("/metamaid/doctor", doctorRouter);
  
 // app.use("/user", userRoute);
 export { app };

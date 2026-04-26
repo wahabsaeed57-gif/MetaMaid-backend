@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    profileImage: {
+      type: String,
+      default: "", 
+    },
 
     address: {
       street: String,

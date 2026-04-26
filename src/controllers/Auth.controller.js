@@ -26,7 +26,7 @@ export const registerUser = async (req, res) => {
     }
 
     const user = await User.create({
-      name, // ✅ fixed
+      name, 
       email,
       password,
       confirmPassword,
@@ -50,7 +50,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// ================= LOGIN =================
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
