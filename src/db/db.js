@@ -24,21 +24,30 @@
 
 import mongoose from "mongoose";
 
+let cached =
+  global.mongoose || (global.mongoose = { conn: null, promise: null });
+
 const connectDb = async () => {
   try {
-    console.log("Mongo URI exists:", !!process.env.MONGODB_URI);
+    if (cached.conn) {
+      return cached.conn;
+    }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      bufferCommands: false,
-    });
+    if (!cached.promise) {
+      cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+        dbName: "metamaid", // 🔥 apna database name
+        bufferCommands: false,
+      });
+    }
 
-    console.log("MongoDB Connected:", conn.connection.host);
-    return conn; // 🔥 important
+    cached.conn = await cached.promise;
+
+    console.log("MongoDB Connected:", cached.conn.connection.host);
+
+    return cached.conn;
   } catch (error) {
     console.log("Mongo DB connection error:", error.message);
-
-    // ❌ Vercel me process.exit mat karo
-    throw error;
+    throw error; // ❌ Vercel friendly (no process.exit)
   }
 };
 
