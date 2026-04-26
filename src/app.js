@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use(express.static("public"));
 // app.use(cookieParser());
 app.get("/", (req, res) => {
-  res.send("this is defult route of backend developement  ");
+  res.send("this is defult route of backend developemrnt ");
 });
 // import routess
 app.use("/metamaid/user",AuthRouter)
@@ -24,5 +24,3 @@ app.use("/metamaid/doctor", doctorRouter);
  
 // app.use("/user", userRoute);
 export default app;
-
-
