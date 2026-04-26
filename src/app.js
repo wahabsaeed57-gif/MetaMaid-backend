@@ -23,4 +23,4 @@ app.use("/metamaid/user",AuthRouter)
 app.use("/metamaid/doctor", doctorRouter);
  
 // app.use("/user", userRoute);
-export default app;
+export  {app};
